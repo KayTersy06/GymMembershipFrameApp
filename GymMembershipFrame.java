@@ -5,6 +5,9 @@ import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -19,6 +22,7 @@ import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 import javax.swing.border.SoftBevelBorder;
 import javax.swing.border.TitledBorder;
+import za.ac.tut.membership.Member;
 
 /**
  *
@@ -32,7 +36,7 @@ public class GymMembershipFrame extends JFrame{
     private JPanel surnamePnl;
     private JPanel idNoPnl;
     private JPanel genderPnl;
-    private JPanel contractPnl;
+    private JPanel contractsPnl;
     private JPanel personalTrainerOptionPnl;
     private JPanel membershipPnl;
     private JPanel commentsPnl;
@@ -76,13 +80,26 @@ public class GymMembershipFrame extends JFrame{
     private JScrollPane scrollableTextArea;
     
     //private button
-    private JButton applyBtn;
+    private JButton registerBtn;
+    private JButton clearBtn;
+    private JButton exitBtn;
+    private JButton searchBtn;
+    private JButton removeBtn;
+    private JButton updateBtn;
+    private JButton displayBtn;
+    
+    //list
+    private ArrayList<Member> members;
     
     //construct the gui
     public GymMembershipFrame() {
         setTitle("Gym membership");
         setSize(500, 500);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        JFrame.setDefaultLookAndFeelDecorated(true);
+        
+        //create a list of members
+        members = new ArrayList<>();
         
         //create panels
         headingPnl = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -95,7 +112,7 @@ public class GymMembershipFrame extends JFrame{
         idNoPnl = new JPanel(new FlowLayout(FlowLayout.LEFT));
         genderPnl = new JPanel(new FlowLayout(FlowLayout.LEFT));
         
-        contractPnl = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        contractsPnl = new JPanel(new FlowLayout(FlowLayout.LEFT));
         personalTrainerOptionPnl = new JPanel(new FlowLayout(FlowLayout.LEFT));
         
         membershipPnl = new JPanel(new GridLayout(2,1,1,1));
@@ -152,7 +169,22 @@ public class GymMembershipFrame extends JFrame{
         scrollableTextArea = new JScrollPane(commentsArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         
         //create button
-        applyBtn = new JButton("APPLY");
+        registerBtn = new JButton("REGISTER");
+        registerBtn.addActionListener(new RegisterBtnListener());
+        
+        searchBtn = new JButton("SEARCH");
+        
+        removeBtn = new JButton("REMOVE");
+        
+        updateBtn = new JButton("UPDATE");
+        
+        displayBtn = new JButton("DISPLAY ALL");
+        
+        clearBtn = new JButton("CLEAR");
+        clearBtn.addActionListener(new ClearBtnListener());
+        
+        exitBtn = new JButton("EXIT");
+        exitBtn.addActionListener(new ExitBtnListener());
         
         //add components to panels
         headingPnl.add(headingLbl); //-->first collective panel
@@ -177,15 +209,15 @@ public class GymMembershipFrame extends JFrame{
         headingClientCombinedPnl.add(headingPnl, BorderLayout.NORTH);
         headingClientCombinedPnl.add(clientPnl, BorderLayout.CENTER);
   
-        contractPnl.add(contractTypeLbl);
-        contractPnl.add(monthToMonthRadBtn);
-        contractPnl.add(sixMonthsRadBtn);
-        contractPnl.add(annualRadBtn);
+        contractsPnl.add(contractTypeLbl);
+        contractsPnl.add(monthToMonthRadBtn);
+        contractsPnl.add(sixMonthsRadBtn);
+        contractsPnl.add(annualRadBtn);
         
         personalTrainerOptionPnl.add(personalTrainerLbl);
         personalTrainerOptionPnl.add(personalTrainerChkBx);
         
-        membershipPnl.add(contractPnl);
+        membershipPnl.add(contractsPnl);
         membershipPnl.add(personalTrainerOptionPnl);
         
         commentsPnl.add(scrollableTextArea);
@@ -193,7 +225,13 @@ public class GymMembershipFrame extends JFrame{
         membershipCommentsCombinedPnl.add(membershipPnl, BorderLayout.NORTH);
         membershipCommentsCombinedPnl.add(commentsPnl, BorderLayout.CENTER);
         
-        btnsPnl.add(applyBtn);
+        btnsPnl.add(registerBtn);
+        btnsPnl.add(searchBtn);
+        btnsPnl.add(updateBtn);
+        btnsPnl.add(removeBtn);
+        btnsPnl.add(displayBtn);
+        btnsPnl.add(clearBtn);
+        btnsPnl.add(exitBtn);
         
         mainPnl.add(headingClientCombinedPnl, BorderLayout.NORTH);
         mainPnl.add(membershipCommentsCombinedPnl, BorderLayout.CENTER);
@@ -205,4 +243,66 @@ public class GymMembershipFrame extends JFrame{
         setVisible(true);
     }
     
+    
+    private class RegisterBtnListener implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            //read data
+            String name = nameTxtFld.getText();
+            String surname = surnameTxtFld.getText();
+            String idNo = idNoTxtFld.getText();
+            String gender = (String)genderComboBox.getSelectedItem();
+            Boolean isPersonalTrainerSelected = personalTrainerChkBx.isSelected();
+            String contractType = "Month-to-month";
+            
+            if(sixMonthsRadBtn.isSelected()){
+                contractType = "Six months";
+            }
+            else{
+                if(annualRadBtn.isSelected())
+                {
+                    contractType = "Annual";
+                }
+            }
+            
+            //create a member
+            Member member = new Member(name, surname, idNo, gender, contractType, isPersonalTrainerSelected);
+            
+            //add the member to the list
+            members.add(member);
+            
+            //add a confirmation message to the text area
+            commentsArea.setText("The member has been successfully added");
+        }
+        
+    }
+    
+    private class ClearBtnListener implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            //clear the fields
+            nameTxtFld.setText("");
+            surnameTxtFld.setText("");
+            idNoTxtFld.setText("");
+            personalTrainerChkBx.setSelected(false);
+            btnGrp.clearSelection();
+            commentsArea.setText("");
+            
+            //set focus back to the name text field
+            nameTxtFld.setFocusable(true);
+        }
+        
+    }
+    
+    private class ExitBtnListener implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            System.exit(1);
+        }
+        //exit
+        
+    }
 }
